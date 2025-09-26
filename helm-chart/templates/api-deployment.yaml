@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "python-api.fullname" .}}-api
+spec:
+  replicas: {{ .values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "python-api.fullname" .}}-api
+  template:
+    metadata:
+      labels: 
+        app: {{ include "python-api.fullname" .}}-api
+    spec:
+      containers:
+        - name: api
+          image: "{{ .values.image.repository}}":"{{ .values.image.tag}}"
+          imagePullPolicy: ifNotPresent
+          ports:
+            - containerPort: {{ .values.api.port }}
+          env: 
+           - name: MONGO_URL
+            value: "{{ .values.api.env.MONGO_URL}}"
+          

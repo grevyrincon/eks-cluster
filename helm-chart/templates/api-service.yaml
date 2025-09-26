@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "python-api.fullname" .}}-api
+spec:
+  type: {{ .values.service.api.type }} 
+  ports:
+    - port: {{ .values.service.api.port }}
+      targetPort: {{ .values.service.api.targetPort }} 
+      protocol: TCP
+
+  selector:
+    app: {{ include "python-api.fullname" .}}-api
+    

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "python-api.fullname" . }}-mongo
+spec:
+  replicas: {{ .values.mongoDB.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "python-api.fullname" . }}-mongo
+  template:
+    metadata:
+      labels:
+        app: {{ include "python-api.fullname" . }}-mongo
+    spec:
+      containers:
+        - name: mongo 
+          image: "{{ .values.mongoDB.image}}"
+          ports:
+            containerPort: {{ .values.mongoDB.port}}
+          volumeMounts:
+            - name: mongo-data
+
+      volumes:
+        - name: mongo-data
+          hostPath:
+            path: /tmp/mongo-data
+            type: DirectoryOrCreate

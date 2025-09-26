@@ -1,0 +1,27 @@
+iamge: 
+  repository: "url"
+  tag: "deploy"
+
+api:
+  replicaCount: 1
+  port: 8000
+  env:
+    MONGO_URL: "mongodb://mongo:27017"
+
+mongoDB:
+  replicaCount: 1
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: 1Gi
+  image: "mongo:6.0"
+  port: 27017
+
+service: 
+  api:
+    type: LoadBalancer
+    port: 80
+    targetPort: 8000
+  mongo:
+    type: ClusterIP
+    port: 27017
