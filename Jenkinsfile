@@ -11,19 +11,13 @@ pipeline {
   }
 
   stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
-    }
-
     stage('Build Docker image') {
       steps {
         sh 'docker --version || true'
         sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
       }
     }
-
+    
     stage('Login to ECR') {
       steps {
         sh '''
@@ -38,28 +32,7 @@ pipeline {
       }
     }
 
-    stage('Update kubeconfig') {
-      steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-          sh '''
-            aws eks update-kubeconfig --name ${KUBE_CLUSTER_NAME} --region ${AWS_REGION}
-            kubectl version --client
-            helm version
-          '''
-        }
-      }
-    }
-
-    stage('Helm deploy') {
-      steps {
-        sh """
-          helm upgrade --install python-api ${CHART_DIR} \
-            --set image.repository=${IMAGE_NAME} \
-            --set image.tag=${IMAGE_TAG} \
-            --wait --timeout 5m
-        """
-      }
-    }
+    
   }
 
   post {
