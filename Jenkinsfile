@@ -1,5 +1,10 @@
 pipeline {
-  agent any
+  agent {
+        docker {
+            image 'amazon/aws-cli:2.14.10'  // ya incluye aws cli
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
   environment {
     AWS_REGION = "us-east-1"           
@@ -11,21 +16,27 @@ pipeline {
   }
 
   stages {
-    stage('Build Docker Image') {
-            steps {
-                sh "docker build -t ${ECR_REPO}:${IMAGE_TAG} ./app"
-            }
+    stage('Login to ECR') {
+      steps {
+        withAWS(region: "${AWS_REGION}", credentials: 'aws-cred') {
+          sh '''
+            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+          '''
         }
-        stage('Push to ECR') {
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-cred']]) {
-                    ecrLogin()
-                    sh "docker tag ${ECR_REPO}:${IMAGE_TAG} ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
-                    sh "docker push ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
-                }
-            }
-        }
-  
+      }
+    }
+    stage('Build Docker image') {
+      steps {
+        sh "docker build -t ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG} ./app"
+      }
+    }
+
+    stage('Push to ECR') {
+      steps {
+        sh "docker push ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
+      }
+    }
+
     
   }
 
