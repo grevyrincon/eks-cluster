@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-        docker {
-            image 'amazon/aws-cli:2.14.10'  // ya incluye aws cli
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+  agent any
 
   environment {
     AWS_REGION = "us-east-1"           
