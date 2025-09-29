@@ -4,7 +4,7 @@ pipeline {
   environment {
     AWS_REGION = "us-east-1"           
     ECR_REGISTRY =  "463470979148.dkr.ecr.us-east-1.amazonaws.com"
-    ECR_REPO = "463470979148.dkr.ecr.us-east-1.amazonaws.com/python-api-repo"
+    ECR_REPO = "python-api-repo"
     IMAGE_TAG = "deploy"
     CHART_DIR = "helm/python-api"
     KUBE_CLUSTER_NAME = "my-eks-cluster" 
@@ -22,13 +22,13 @@ pipeline {
     }
     stage('Build Docker image') {
       steps {
-        sh 'docker build -t ${ECR_REPO}:${IMAGE_TAG} ./app'
+        sh 'docker build -t ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG} ./app'
       }
     }
 
     stage('Push to ECR') {
       steps {
-        sh 'docker push ${IMAGE_NAME}:${IMAGE_TAG}'
+        sh 'docker push ${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}'
       }
     }
 
