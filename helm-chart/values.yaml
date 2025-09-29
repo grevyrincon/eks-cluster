@@ -10,10 +10,6 @@ api:
 
 mongoDB:
   replicaCount: 1
-  persistence:
-    enabled: true
-    accessMode: ReadWriteOnce
-    size: 1Gi
   image: "mongo:6.0"
   port: 27017
 

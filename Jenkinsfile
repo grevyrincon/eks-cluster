@@ -6,8 +6,10 @@ pipeline {
     ECR_REGISTRY =  "463470979148.dkr.ecr.us-east-1.amazonaws.com"
     ECR_REPO = "python-api-repo"
     IMAGE_TAG = "deploy"
-    CHART_DIR = "helm/python-api"
-    KUBE_CLUSTER_NAME = "my-eks-cluster" 
+    CHART_DIR = "helm-chart"
+    KUBE_CLUSTER   = "api-cluster"
+    HELM_RELEASE   = "python-api"
+    K8S_NAMESPACE  = "default"
   }
 
   stages {
@@ -31,7 +33,21 @@ pipeline {
         sh "docker push ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
       }
     }
+    stage('Deploy to EKS via Helm') {
+      steps {
+        withAWS(region: "${AWS_REGION}", credentials: 'aws-cred') {
+          sh """
+            aws eks update-kubeconfig --region ${AWS_REGION} --name ${KUBE_CLUSTER}
 
+            helm upgrade --install ${HELM_RELEASE} ${CHART_DIR} \\
+              -f ${CHART_DIR}/values.yaml \\
+              --namespace ${K8S_NAMESPACE} \\
+              --set image.repository=${ECR_REGISTRY}/${ECR_REPO} \\
+              --set image.tag=${IMAGE_TAG}
+          """
+        }
+      }
+    }
     
   }
 
