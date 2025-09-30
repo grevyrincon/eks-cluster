@@ -33,6 +33,16 @@ pipeline {
         sh "docker push ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
       }
     }
+    stage('Validate AWS') {
+      steps {
+        withAWS(region: "${AWS_REGION}", credentials: 'aws-cred') {
+          sh 'aws --version'
+          sh 'aws sts get-caller-identity'
+          sh 'aws eks list-clusters'
+        }
+      }
+    }
+
     stage('Deploy to EKS via Helm') {
       steps {
         withAWS(region: "${AWS_REGION}", credentials: 'aws-cred') {
