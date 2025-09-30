@@ -19,6 +19,7 @@ spec:
             - containerPort: {{ .Values.mongoDB.port}}
           volumeMounts:
             - name: mongo-data
+              mountPath: /data/db
 
       volumes:
         - name: mongo-data
