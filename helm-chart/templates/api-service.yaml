@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: {{ include "python-api.fullname" .}}-api
 spec:
-  type: {{ .values.service.api.type }} 
+  type: {{ .Values.service.api.type }} 
   ports:
-    - port: {{ .values.service.api.port }}
-      targetPort: {{ .values.service.api.targetPort }} 
+    - port: {{ .Values.service.api.port }}
+      targetPort: {{ .Values.service.api.targetPort }} 
       protocol: TCP
 
   selector:

@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: {{ include "python-api.fullname" . }}-mongo
 spec:
-  type: {{ .values.service.mongo.type }}
+  type: {{ .Values.service.mongo.type }}
   ports:
-    - port: {{ .values.service.mongo.port }}
-      targetPort: {{ .values.service.mongo.port }}
+    - port: {{ .Values.service.mongo.port }}
+      targetPort: {{ .Values.service.mongo.port }}
       protocol: TCP
   selector:
     app: {{ include "python-api.fullname" . }}-mongo

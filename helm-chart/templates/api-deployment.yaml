@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ include "python-api.fullname" .}}-api
 spec:
-  replicas: {{ .values.api.replicaCount }}
+  replicas: {{ .Values.api.replicaCount }}
   selector:
     matchLabels:
       app: {{ include "python-api.fullname" .}}-api
@@ -14,11 +14,11 @@ spec:
     spec:
       containers:
         - name: api
-          image: "{{ .values.image.repository}}":"{{ .values.image.tag}}"
+          image: "{{ .Values.image.repository}}":"{{ .Values.image.tag}}"
           imagePullPolicy: ifNotPresent
           ports:
-            - containerPort: {{ .values.api.port }}
+            - containerPort: {{ .Values.api.port }}
           env: 
            - name: MONGO_URL
-            value: "{{ .values.api.env.MONGO_URL}}"
+            value: "{{ .Values.api.env.MONGO_URL}}"
           

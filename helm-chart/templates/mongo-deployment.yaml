@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ include "python-api.fullname" . }}-mongo
 spec:
-  replicas: {{ .values.mongoDB.replicaCount }}
+  replicas: {{ .Values.mongoDB.replicaCount }}
   selector:
     matchLabels:
       app: {{ include "python-api.fullname" . }}-mongo
@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
         - name: mongo 
-          image: "{{ .values.mongoDB.image}}"
+          image: "{{ .Values.mongoDB.image}}"
           ports:
-            containerPort: {{ .values.mongoDB.port}}
+            containerPort: {{ .Values.mongoDB.port}}
           volumeMounts:
             - name: mongo-data
 
