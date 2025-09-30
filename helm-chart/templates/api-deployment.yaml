@@ -19,6 +19,6 @@ spec:
           ports:
             - containerPort: {{ .Values.api.port }}
           env: 
-           - name: MONGO_URL
-            value: "{{ .Values.api.env.MONGO_URL}}"
+            - name: MONGO_URL
+              value: "{{ .Values.api.env.MONGO_URL}}"
           
