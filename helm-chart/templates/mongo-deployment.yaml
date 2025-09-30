@@ -16,7 +16,7 @@ spec:
         - name: mongo 
           image: "{{ .Values.mongoDB.image}}"
           ports:
-            containerPort: {{ .Values.mongoDB.port}}
+            - containerPort: {{ .Values.mongoDB.port}}
           volumeMounts:
             - name: mongo-data
 
