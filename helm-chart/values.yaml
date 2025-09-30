@@ -5,8 +5,6 @@ image:
 api:
   replicaCount: 1
   port: 8000
-  env:
-    MONGO_URL: "mongodb://mongo:27017"
 
 mongoDB:
   replicaCount: 1

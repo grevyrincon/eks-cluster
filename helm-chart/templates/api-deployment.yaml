@@ -20,5 +20,5 @@ spec:
             - containerPort: {{ .Values.api.port }}
           env: 
             - name: MONGO_URL
-              value: "{{ .Values.api.env.MONGO_URL}}"
+              value: "mongodb://{{ include "python-api.fullname" . }}-mongo:{{ .Values.mongoDB.port }}"
           
