@@ -15,7 +15,7 @@ spec:
       containers:
         - name: api
           image: "{{ .Values.image.repository}}:{{ .Values.image.tag}}"
-          imagePullPolicy: ifNotPresent
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: {{ .Values.api.port }}
           env: 
