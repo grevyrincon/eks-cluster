@@ -9,6 +9,7 @@ pipeline {
     CHART_DIR = "helm-chart"
     KUBE_CLUSTER   = "api-cluster"
     HELM_RELEASE   = "python-api"
+    HELM_MONITORING_RELEASE = "monitoring"
     K8S_NAMESPACE  = "default"
   }
 
@@ -54,6 +55,23 @@ pipeline {
               --namespace ${K8S_NAMESPACE} \\
               --set image.repository=${ECR_REGISTRY}/${ECR_REPO} \\
               --set image.tag=${IMAGE_TAG}
+          """
+        }
+      }
+    }
+    stage('Deploy Monitoring Stack') {
+      steps {
+        withAWS(region: "${AWS_REGION}", credentials: 'aws-cred') {
+          sh """
+            aws eks update-kubeconfig --region ${AWS_REGION} --name ${KUBE_CLUSTER}
+
+            helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+            helm repo update
+            
+            helm upgrade --install ${HELM_MONITORING_RELEASE} prometheus-community/kube-prometheus-stack \
+              --namespace observability \
+              --create-namespace \
+              -f monitoring/values-monitoring.yaml
           """
         }
       }

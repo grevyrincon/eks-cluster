@@ -1,20 +1,19 @@
-locals {
-    tags = {
-        Terraform   = "true"
-        Environment = "dev"
-    }
-}
 
+data "aws_availability_zones" "available" {}
+
+# -------------------
+# VPC
+# -------------------
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
     version = "5.1.0"
 
     name = "${var.cluster_name}-vpc"
-    cidr = "10.0.0.0/16"
+    cidr = var.vpc_cidr
 
-    azs = slice(data.aws_availability_zones.available.names, 0, 2)
-    public_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
-    private_subnets = ["10.0.101.0/24", "10.0.102.0/24"]
+    azs = slice(data.aws_availability_zones.available.names, 0, var.az_count)
+    public_subnets = var.public_subnets
+    private_subnets = var.private_subnets
     enable_dns_hostnames = true
     enable_nat_gateway = true
 
@@ -25,21 +24,20 @@ module "vpc" {
     private_subnet_tags = {
         "kubernetes.io/role/internal-elb" = 1
     }
-    tags = local.tags
+    tags = var.tags
 }
 
-
-
-data "aws_availability_zones" "available" {}
-
+# -------------------
+# EKS Cluster
+# -------------------
 module "eks" {
     source  = "terraform-aws-modules/eks/aws"
     version = "~> 21.0"
 
     name = var.cluster_name
-    kubernetes_version  = "1.33"
+    kubernetes_version  = var.kubernetes_version
 
-    endpoint_public_access_cidrs = ["0.0.0.0/0"] 
+    endpoint_public_access_cidrs = var.endpoint_public_access_cidrs
     endpoint_public_access = true
 
     addons = {
@@ -58,14 +56,14 @@ module "eks" {
     
     eks_managed_node_groups = {
         api-node = {
-            ami_type = "AL2023_x86_64_STANDARD"
-            min_size = 1
-            max_size = 5
-            desired_size = 1
+            ami_type = var.node_ami_type
+            min_size = var.node_min_size
+            max_size = var.node_max_size
+            desired_size = var.node_desired_size
             instance_types = [var.instance_type]
         }
     }
-    tags = local.tags
+    tags = var.tags
 }
 
 resource "aws_ecr_repository" "api_repo" {
@@ -75,5 +73,47 @@ resource "aws_ecr_repository" "api_repo" {
         scan_on_push = true
     }
 
-    tags = local.tags
+    tags = var.tags
 }
+
+# -------------------
+# S3 Bucket para Terraform outputs
+# -------------------
+resource "aws_s3_bucket" "terraform_outputs" {
+  bucket = var.s3_bucket_name
+  region = var.s3_bucket_region
+
+  tags = merge(
+    var.tags,
+    {
+      Name        = var.s3_bucket_name
+      Environment = "shared"
+    }
+  )
+}
+
+# Habilitar versionado si está activado
+resource "aws_s3_bucket_versioning" "terraform_outputs_versioning" {
+  bucket = aws_s3_bucket.terraform_outputs.id
+
+  versioning_configuration {
+    status = var.s3_bucket_versioning ? "Enabled" : "Suspended"
+  }
+}
+
+resource "null_resource" "export_outputs_to_s3" {
+  triggers = {
+    environment = var.environment
+  }
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command = "terraform output -json > outputs.json && aws s3 cp outputs.json s3://${var.s3_bucket_name}/outputs/${var.environment}-outputs.json"
+  }
+
+  depends_on = [
+    module.eks,
+    aws_ecr_repository.api_repo,
+    aws_s3_bucket.terraform_outputs
+  ]
+}
+
