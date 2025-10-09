@@ -31,9 +31,9 @@ pipeline {
             def jsonText = readFile('outputs.json')
             def outputs = readJSON text: jsonText
 
-            env.KUBE_CLUSTER = outputs.cluster_name
-            env.ECR_REGISTRY = outputs.ecr_repository_url
-            env.AWS_REGION = outputs.aws_region
+            env.KUBE_CLUSTER = outputs.cluster_name.value
+            env.ECR_REGISTRY = outputs.ecr_repository_url.value
+            env.AWS_REGION = outputs.aws_region.value
 
             env.IMAGE_TAG = env.BRANCH_NAME  // branch name is going to be the image tag name
             env.HELM_RELEASE = "python-api-${env.BRANCH_NAME}"  // helm release por ambiente
