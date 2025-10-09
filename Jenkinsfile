@@ -10,33 +10,35 @@ pipeline {
   stages {
     stage('Load Environment from S3') {
       steps {
-        script {
-          // determine the file to get the architecture info.
-          def envFile
-          if (env.BRANCH_NAME == 'main') {
-            envFile = 'outputs/prod-outputs.json'
-          } else if (env.BRANCH_NAME.startsWith('feature/')) {
-            envFile = "outputs/dev-outputs.json"
-          } else if (env.BRANCH_NAME.startsWith('test')) {
-            envFile = "outputs/test-outputs.json"
-          } else {
-            envFile = "outputs/dev-outputs.json"
+        withAWS(region: 'us-east-1', credentials: 'aws-cred') { 
+          script {
+            // determine the file to get the architecture info.
+            def envFile
+            if (env.BRANCH_NAME == 'main') {
+              envFile = 'outputs/prod-outputs.json'
+            } else if (env.BRANCH_NAME.startsWith('feature/')) {
+              envFile = "outputs/dev-outputs.json"
+            } else if (env.BRANCH_NAME.startsWith('test')) {
+              envFile = "outputs/test-outputs.json"
+            } else {
+              envFile = "outputs/dev-outputs.json"
+            }
+
+            // Ddowload the s3 file
+            sh "aws s3 cp s3://${S3_BUCKET}/${envFile} ./outputs.json"
+
+            // read json file
+            def jsonText = readFile('outputs.json')
+            def outputs = readJSON text: jsonText
+
+            env.KUBE_CLUSTER = outputs.cluster_name
+            env.ECR_REGISTRY = outputs.ecr_repository_url
+            env.AWS_REGION = outputs.aws_region
+
+            env.IMAGE_TAG = env.BRANCH_NAME  // branch name is going to be the image tag name
+            env.HELM_RELEASE = "python-api-${env.BRANCH_NAME}"  // helm release por ambiente
+            env.K8S_NAMESPACE = env.BRANCH_NAME
           }
-
-          // Ddowload the s3 file
-          sh "aws s3 cp s3://${S3_BUCKET}/${envFile} ./outputs.json"
-
-          // read json file
-          def jsonText = readFile('outputs.json')
-          def outputs = readJSON text: jsonText
-
-          env.KUBE_CLUSTER = outputs.cluster_name
-          env.ECR_REGISTRY = outputs.ecr_repository_url
-          env.AWS_REGION = outputs.aws_region
-
-          env.IMAGE_TAG = env.BRANCH_NAME  // branch name is going to be the image tag name
-          env.HELM_RELEASE = "python-api-${env.BRANCH_NAME}"  // helm release por ambiente
-          env.K8S_NAMESPACE = env.BRANCH_NAME
         }
       }
     }
