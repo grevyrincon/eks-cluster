@@ -1,15 +1,15 @@
 apiVersion: monitoring.coreos.com/v1
 kind: serviceMonitor
 metadata:
-  name: python-api-monitor
+  name: {{ include "python-api.fullname" . }}-monitor
   namespace: observability
 spec:
   selector:
     matchLabels:
-      app: python-api-api
+      app: {{ include "python-api.name" . }}-api
   namespaceSelector:
     matchNames:
-      - default
+      - {{ .Release.Namespace }}
   endpoints:
     - port: http
       path: /metrics

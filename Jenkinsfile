@@ -1,19 +1,45 @@
 pipeline {
   agent any
 
-  environment {
-    AWS_REGION = "us-east-1"           
-    ECR_REGISTRY =  "463470979148.dkr.ecr.us-east-1.amazonaws.com"
-    ECR_REPO = "python-api-repo"
-    IMAGE_TAG = "deploy"
+  environment {      
     CHART_DIR = "helm-chart"
-    KUBE_CLUSTER   = "api-cluster"
-    HELM_RELEASE   = "python-api"
     HELM_MONITORING_RELEASE = "monitoring"
-    K8S_NAMESPACE  = "default"
+    S3_BUCKET = "my-terraform-outputs-bucket"
   }
 
   stages {
+    stage('Load Environment from S3') {
+      steps {
+        script {
+          // determine the file to get the architecture info.
+          def envFile
+          if (env.BRANCH_NAME == 'main') {
+            envFile = 'outputs/prod-outputs.json'
+          } else if (env.BRANCH_NAME.startsWith('feature/')) {
+            envFile = "outputs/dev-outputs.json"
+          } else if (env.BRANCH_NAME.startsWith('test')) {
+            envFile = "outputs/test-outputs.json"
+          } else {
+            envFile = "outputs/dev-outputs.json"
+          }
+
+          // Ddowload the s3 file
+          sh "aws s3 cp s3://${S3_BUCKET}/${envFile} ./outputs.json"
+
+          // read json file
+          def jsonText = readFile('outputs.json')
+          def outputs = readJSON text: jsonText
+
+          env.KUBE_CLUSTER = outputs.cluster_name
+          env.ECR_REGISTRY = outputs.ecr_repository_url
+          env.AWS_REGION = outputs.aws_region
+
+          env.IMAGE_TAG = env.BRANCH_NAME  // branch name is going to be the image tag name
+          env.HELM_RELEASE = "python-api-${env.BRANCH_NAME}"  // helm release por ambiente
+          env.K8S_NAMESPACE = env.BRANCH_NAME
+        }
+      }
+    }
     stage('Login to ECR') {
       steps {
         withAWS(region: "${AWS_REGION}", credentials: 'aws-cred') {
@@ -25,13 +51,13 @@ pipeline {
     }
     stage('Build Docker image') {
       steps {
-        sh "docker build -t ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG} ./app"
+        sh "docker build -t ${ECR_REGISTRY}:${IMAGE_TAG} ./app"
       }
     }
 
     stage('Push to ECR') {
       steps {
-        sh "docker push ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
+        sh "docker push ${ECR_REGISTRY}:${IMAGE_TAG}"
       }
     }
     stage('Validate AWS') {
@@ -53,7 +79,7 @@ pipeline {
             helm upgrade --install ${HELM_RELEASE} ${CHART_DIR} \\
               -f ${CHART_DIR}/values.yaml \\
               --namespace ${K8S_NAMESPACE} \\
-              --set image.repository=${ECR_REGISTRY}/${ECR_REPO} \\
+              --set image.repository=${ECR_REGISTRY} \\
               --set image.tag=${IMAGE_TAG}
           """
         }
@@ -81,7 +107,7 @@ pipeline {
 
   post {
     success {
-      echo "Deploy successful: ${ECR_REPO}:${IMAGE_TAG}"
+      echo "Deploy successful"
     }
     failure {
       echo "Pipeline failed"

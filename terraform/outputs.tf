@@ -2,6 +2,10 @@ output "cluster_name" {
   value = module.eks.cluster_name
   description = "The name of the EKS cluster"
 }
+output "aws_region" {
+  value       = var.aws_region
+  description = "The AWS region being used for the deployment"
+}
 
 output "cluster_endpoint" {
   value = module.eks.cluster_endpoint
