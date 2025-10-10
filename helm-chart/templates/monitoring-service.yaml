@@ -1,5 +1,5 @@
 apiVersion: monitoring.coreos.com/v1
-kind: serviceMonitor
+kind: ServiceMonitor
 metadata:
   name: {{ include "python-api.fullname" . }}-monitor
   namespace: observability
