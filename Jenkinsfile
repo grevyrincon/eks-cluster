@@ -103,17 +103,17 @@ pipeline {
           """
         }
       }
-      stage('Deploy ServiceMonitor') {
-        steps {
-              withAWS(region: "${AWS_REGION}", credentials: 'aws-cred') {
-                  sh """
-                      aws eks update-kubeconfig --region ${AWS_REGION} --name ${KUBE_CLUSTER}
-                      # Aplicar el ServiceMonitor con kubectl DESPUÉS de que la app está desplegada
-                      kubectl apply -f ${CHART_DIR}/templates/monitoring-service.yaml
-                  """
-              }
-          }
-      }
+    }
+    stage('Deploy ServiceMonitor') {
+      steps {
+            withAWS(region: "${AWS_REGION}", credentials: 'aws-cred') {
+                sh """
+                    aws eks update-kubeconfig --region ${AWS_REGION} --name ${KUBE_CLUSTER}
+                    # Aplicar el ServiceMonitor con kubectl DESPUÉS de que la app está desplegada
+                    kubectl apply -f ${CHART_DIR}/templates/monitoring-service.yaml
+                """
+            }
+        }
     }
     
     
