@@ -9,6 +9,8 @@ grafana:
 prometheus:
   prometheusSpec:
     retention: 2d
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
     scrapeInterval: 60s
     storageSpec:
       volumeClaimTemplate:

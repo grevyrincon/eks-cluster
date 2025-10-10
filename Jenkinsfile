@@ -99,8 +99,7 @@ pipeline {
               -f ${CHART_DIR}/values.yaml \\
               --namespace ${K8S_NAMESPACE} \\
               --set image.repository=${ECR_REGISTRY} \\
-              --set image.tag=${IMAGE_TAG} \\
-              --wait-for-crds  //
+              --set image.tag=${IMAGE_TAG} 
           """
         }
       }
