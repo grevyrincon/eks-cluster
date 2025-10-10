@@ -10,7 +10,8 @@ metadata:
 spec:
   type: {{ .Values.service.api.type }} 
   ports:
-    - port: {{ .Values.service.api.port }}
+    - name: http
+      port: {{ .Values.service.api.port }}
       targetPort: {{ .Values.service.api.targetPort }} 
       protocol: TCP
     - name: metrics
