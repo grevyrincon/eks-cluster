@@ -6,7 +6,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ include "python-api.name" . }}-api
+      app: {{ include "python-api.fullname" . }}-api
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}
