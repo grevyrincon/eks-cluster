@@ -1,3 +1,11 @@
+# Version 2 
+
+In this version, I implemented Grafana and Prometheus for the cluster, deploying them in their own namespace and as separate releases.
+
+Additionally, I added TFVars files to improve the customization of the infrastructure with Terraform, and updated the Jenkinsfiles to retrieve the infrastructure from S3, aiming to automate as much as possible.
+
+I also implemented multiple pipelines and used branches to separate releases, allowing better management of different environments and version control of the deployments.
+
 # EKS Cluster - Devops
 
 I'm really glad with the development of this project. I feel that I learned a lot from all the mistakes I made during this project. I gained valuable experience in creating infrastructure on AWS Cloud.
@@ -29,6 +37,10 @@ This project contains an application using Docker, Helm, Terraform, and Jenkins 
 ### Kubectl
 ![Kubectl](images/kubectl.png)
 
+### Grafana + prometheus
+![grafana](images/grafana.png)
+
+![grafana2](images/grafana-2.png)
 ### Tests
 create a name
 ![Test 1](images/test-1.png)
