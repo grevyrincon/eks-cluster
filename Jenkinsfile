@@ -98,11 +98,23 @@ pipeline {
             helm upgrade --install ${HELM_RELEASE} ${CHART_DIR} \\
               -f ${CHART_DIR}/values.yaml \\
               --namespace ${K8S_NAMESPACE} \\
+              --create-namespace \\
               --set image.repository=${ECR_REGISTRY} \\
               --set image.tag=${IMAGE_TAG} 
           """
         }
       }
+    }
+    stage('Deploy ServiceMonitor') {
+      steps {
+            withAWS(region: "${AWS_REGION}", credentials: 'aws-cred') {
+                sh """
+                    aws eks update-kubeconfig --region ${AWS_REGION} --name ${KUBE_CLUSTER}
+                    # Aplicar el ServiceMonitor con kubectl DESPUÉS de que la app está desplegada
+                    kubectl apply -f monitoring/monitoring-service.yaml
+                """
+            }
+        }
     }
     
     
