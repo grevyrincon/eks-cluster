@@ -57,7 +57,6 @@ pipeline {
         withAWS(region: "${AWS_REGION}", credentials: "${SECRET_NAME}") {
           sh """
             aws eks update-kubeconfig --region ${AWS_REGION} --name ${KUBE_CLUSTER}
-            ls -la 
 
             cd ${CHART_DIR}
             helm upgrade --install ${HELM_RELEASE} . \\
