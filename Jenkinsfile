@@ -56,7 +56,7 @@ pipeline {
           sh """
             aws eks update-kubeconfig --region ${AWS_REGION} --name ${KUBE_CLUSTER}
 
-            helm upgrade --install ${HELM_RELEASE} ${CHART_DIR} \\
+            helm upgrade --install ${HELM_RELEASE} ./${CHART_DIR} \\
               -f ${CHART_DIR}/values.yaml \\
               --namespace ${K8S_NAMESPACE} \\
               --create-namespace \\
