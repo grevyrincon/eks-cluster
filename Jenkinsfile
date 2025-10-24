@@ -14,15 +14,17 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        script {
-            // Full clone with tags
-            checkout([$class: 'GitSCM',
-                branches: [[name: "*/${PYTHON_APP_BRANCH}"]],
-                doGenerateSubmoduleConfigurations: false,
-                extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false]],
-                userRemoteConfigs: [[url: 'https://github.com/grevyrincon/python-app.git']]]
-            )
-            env.IMAGE_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+        dir('python-app') {
+          script {
+              // Full clone with tags
+              checkout([$class: 'GitSCM',
+                  branches: [[name: "*/${PYTHON_APP_BRANCH}"]],
+                  doGenerateSubmoduleConfigurations: false,
+                  extensions: [[$class: 'CloneOption', depth: 0, noTags: false, reference: '', shallow: false]],
+                  userRemoteConfigs: [[url: 'https://github.com/grevyrincon/python-app.git']]]
+              )
+              env.IMAGE_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+          }
         }
       }
     }
@@ -56,7 +58,7 @@ pipeline {
           sh """
             aws eks update-kubeconfig --region ${AWS_REGION} --name ${KUBE_CLUSTER}
             ls -la 
-            
+
             cd ${CHART_DIR}
             helm upgrade --install ${HELM_RELEASE} . \\
               -f values.yaml \\
