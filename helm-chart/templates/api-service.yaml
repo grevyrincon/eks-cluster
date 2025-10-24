@@ -14,8 +14,6 @@ spec:
       port: {{ .Values.service.api.port }}
       targetPort: {{ .Values.service.api.targetPort }} 
       protocol: TCP
-    - name: metrics
-      port: 9100
 
   selector:
     app: {{ include "python-api.fullname" .}}-api
