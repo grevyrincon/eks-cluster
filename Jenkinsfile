@@ -8,6 +8,7 @@ pipeline {
     TF_BUCKET = "terraform-state-bucket-eks-cluster"  
     TF_KEY = "${ENV}/terraform.tfstate"  
     PYTHON_APP_BRANCH = "main"
+    SECRET_NAME = 'aws-cred'
   }
 
   stages {
