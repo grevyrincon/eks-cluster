@@ -56,12 +56,13 @@ pipeline {
           sh """
             aws eks update-kubeconfig --region ${AWS_REGION} --name ${KUBE_CLUSTER}
 
-            helm upgrade --install ${HELM_RELEASE} ./${CHART_DIR} \\
-              -f ${CHART_DIR}/values.yaml \\
+            cd ${CHART_DIR}
+            helm upgrade --install ${HELM_RELEASE} . \\
+              -f values.yaml \\
               --namespace ${K8S_NAMESPACE} \\
               --create-namespace \\
               --set image.repository=${ECR_REGISTRY} \\
-              --set image.tag=${IMAGE_TAG} 
+              --set image.tag=${IMAGE_TAG}
           """
         }
       }
