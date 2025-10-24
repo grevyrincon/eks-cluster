@@ -42,8 +42,9 @@ pipeline {
               env.KUBE_CLUSTER = outputs.cluster_name.value
               env.ECR_REGISTRY = outputs.ecr_repository_url.value
               env.AWS_REGION = outputs.aws_region.value
-              env.HELM_RELEASE = "${BRANCH_NAME}"
-              env.K8S_NAMESPACE = "${BRANCH_NAME}"
+              def sanitizedBranchName = BRANCH_NAME.replaceAll('[^a-zA-Z0-9-]', '-')
+              env.HELM_RELEASE = sanitizedBranchName
+              env.K8S_NAMESPACE = sanitizedBranchName
 
           }
         }
